@@ -127,6 +127,13 @@
   <span class="tax-toggle">币种
     <select class="inp" id="currency"></select>
   </span>
+  <span class="tax-toggle">语言
+    <select class="inp" id="lang">
+      <option value="both">中英双语</option>
+      <option value="zh">中文</option>
+      <option value="en">English</option>
+    </select>
+  </span>
   <button onclick="resetInvoice()">新建</button>
   <button onclick="window.print()" class="primary">打印 / 导出 PDF</button>
 </div>
@@ -140,7 +147,7 @@
       <input type="file" id="logoInput" accept="image/*" hidden>
     </div>
     <div class="top-right">
-      <div class="doctitle">INVOICE</div>
+      <div class="doctitle" data-i18n="invoice">INVOICE</div>
       <div class="company">
         <div class="strong" contenteditable data-save="coName">Coding Mind</div>
         <div contenteditable data-save="coAddr">920 Roosevelt<br>Suite 200<br>Irvine, California 92620<br>United States</div>
@@ -152,15 +159,15 @@
   <!-- Bill To + meta -->
   <div class="mid">
     <div class="billto">
-      <div class="label">BILL TO</div>
+      <div class="label" data-i18n="billTo">BILL TO</div>
       <div class="name" contenteditable data-nosave>家长 / 公司名称</div>
     </div>
     <div class="meta">
       <table>
-        <tr><td class="k">Invoice Number:</td><td class="v" contenteditable data-nosave id="invNo">1001</td></tr>
-        <tr><td class="k">Invoice Date:</td><td class="v" contenteditable data-nosave id="invDate"></td></tr>
-        <tr><td class="k">Payment Due:</td><td class="v" contenteditable data-nosave id="dueDate"></td></tr>
-        <tr class="due"><td class="k">Amount Due (<span class="curcode">USD</span>):</td><td class="v" id="metaAmountDue">$0.00</td></tr>
+        <tr><td class="k" data-i18n="invNo" data-colon>Invoice Number:</td><td class="v" contenteditable data-nosave id="invNo">1001</td></tr>
+        <tr><td class="k" data-i18n="invDate" data-colon>Invoice Date:</td><td class="v" contenteditable data-nosave id="invDate"></td></tr>
+        <tr><td class="k" data-i18n="paymentDue" data-colon>Payment Due:</td><td class="v" contenteditable data-nosave id="dueDate"></td></tr>
+        <tr class="due"><td class="k"><span class="adlabel"></span> (<span class="curcode">USD</span>):</td><td class="v" id="metaAmountDue">$0.00</td></tr>
       </table>
     </div>
   </div>
@@ -169,10 +176,10 @@
   <table class="items">
     <thead>
       <tr>
-        <th class="desc">Items</th>
-        <th class="qty">Quantity</th>
-        <th class="price">Price</th>
-        <th class="amount">Amount</th>
+        <th class="desc" data-i18n="items">Items</th>
+        <th class="qty" data-i18n="qty">Quantity</th>
+        <th class="price" data-i18n="price">Price</th>
+        <th class="amount" data-i18n="amount">Amount</th>
         <th class="no-print" style="width:24px;background:#fff"></th>
       </tr>
     </thead>
@@ -184,16 +191,16 @@
   <div class="totals">
     <div class="totals-inner">
       <table id="totalsTable">
-        <tr id="subtotalRow" style="display:none"><td class="tl">Subtotal:</td><td class="tv" id="subtotal">$0.00</td></tr>
+        <tr id="subtotalRow" style="display:none"><td class="tl" data-i18n="subtotal" data-colon>Subtotal:</td><td class="tv" id="subtotal">$0.00</td></tr>
         <tr id="taxRow" style="display:none"><td class="tl" id="taxLabel">Tax:</td><td class="tv" id="taxAmt">$0.00</td></tr>
-        <tr class="total"><td class="tl">Total:</td><td class="tv" id="grandTotal">$0.00</td></tr>
-        <tr class="due" id="dueRow"><td class="tl">Amount Due (<span class="curcode">USD</span>):</td><td class="tv" id="amountDue">$0.00</td></tr>
+        <tr class="total"><td class="tl" data-i18n="total" data-colon>Total:</td><td class="tv" id="grandTotal">$0.00</td></tr>
+        <tr class="due" id="dueRow"><td class="tl"><span class="adlabel"></span> (<span class="curcode">USD</span>):</td><td class="tv" id="amountDue">$0.00</td></tr>
       </table>
       <button class="add-row no-print" onclick="addPayment()">+ 添加收款 Add payment</button>
     </div>
   </div>
 
-  <div class="footer-note" contenteditable data-save="footerNote">Thank you for your business!</div>
+  <div class="footer-note" contenteditable data-i18n="thanks">Thank you for your business!</div>
 </div>
 
 <script>
@@ -216,12 +223,43 @@
   const money = n => cur().sym + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
   function num(t){ return parseFloat((t||'').replace(/[^0-9.\-]/g,'')) || 0; }
 
-  /* ---------- Dates (US long format) ---------- */
+  /* ---------- Language / i18n ---------- */
+  const I18N = {
+    invoice:    {zh:'发票',     en:'INVOICE'},
+    billTo:     {zh:'收款方',   en:'BILL TO'},
+    invNo:      {zh:'发票编号', en:'Invoice Number'},
+    invDate:    {zh:'开票日期', en:'Invoice Date'},
+    paymentDue: {zh:'付款到期', en:'Payment Due'},
+    amountDue:  {zh:'应付金额', en:'Amount Due'},
+    items:      {zh:'项目',     en:'Items'},
+    qty:        {zh:'数量',     en:'Quantity'},
+    price:      {zh:'单价',     en:'Price'},
+    amount:     {zh:'金额',     en:'Amount'},
+    subtotal:   {zh:'小计',     en:'Subtotal'},
+    tax:        {zh:'税',       en:'Tax'},
+    total:      {zh:'合计',     en:'Total'},
+    thanks:     {zh:'感谢您的惠顾！', en:'Thank you for your business!'},
+  };
+  function curLang(){ return $('#lang').value || 'both'; }
+  function t(key){ const e = I18N[key]; const l = curLang(); return l === 'both' ? (e.zh + ' ' + e.en) : e[l]; }
+  function applyLang(){
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      el.textContent = t(el.dataset.i18n) + (el.hasAttribute('data-colon') ? ':' : '');
+    });
+    document.querySelectorAll('.adlabel').forEach(el => el.textContent = t('amountDue'));
+    recalc();
+  }
+
+  /* ---------- Dates (format follows language) ---------- */
   const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  function todayLong(){ const d = new Date(); return MONTHS[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear(); }
+  function todayLong(){
+    const d = new Date();
+    if (curLang() === 'zh') return d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日';
+    return MONTHS[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+  }
 
   /* ---------- Settings persistence ---------- */
-  const SETTINGS_KEY = 'invoiceSettings_v4';
+  const SETTINGS_KEY = 'invoiceSettings_v5';
   function loadSettings() {
     let s = {};
     try { s = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; } catch(e){}
@@ -234,6 +272,7 @@
     if (s.currency) $('#currency').value = s.currency;
     if (s.taxRate != null) $('#taxRate').value = s.taxRate;
     if (s.taxOn) $('#taxOn').checked = true;
+    if (s.lang) $('#lang').value = s.lang;
   }
   function saveSettings() {
     const s = {};
@@ -245,6 +284,7 @@
     s.currency = $('#currency').value;
     s.taxRate = $('#taxRate').value;
     s.taxOn = $('#taxOn').checked;
+    s.lang = $('#lang').value;
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
   }
 
@@ -309,7 +349,7 @@
     $('#subtotalRow').style.display = taxOn ? '' : 'none';
     $('#taxRow').style.display = taxOn ? '' : 'none';
     $('#subtotal').textContent = money(sub);
-    $('#taxLabel').textContent = 'Tax (' + rate + '%):';
+    $('#taxLabel').textContent = t('tax') + ' (' + rate + '%):';
     $('#taxAmt').textContent = money(tax);
     $('#grandTotal').textContent = money(total);
 
@@ -346,10 +386,12 @@
   });
   document.addEventListener('change', e => {
     if (['taxOn','currency'].includes(e.target.id)) { recalc(); saveSettings(); }
+    if (e.target.id === 'lang') { applyLang(); saveSettings(); }
   });
 
   /* ---------- Init ---------- */
   loadSettings();
+  applyLang();
   $('#invDate').textContent = todayLong();
   $('#dueDate').textContent = todayLong();
   addRow('Summer Camp', 1, 0);
