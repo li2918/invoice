@@ -142,7 +142,7 @@
     <div class="top-right">
       <div class="doctitle">INVOICE</div>
       <div class="company">
-        <div class="strong" contenteditable data-save="coName">Coding Minds, Inc.</div>
+        <div class="strong" contenteditable data-save="coName">Coding Mind</div>
         <div contenteditable data-save="coAddr">920 Roosevelt<br>Suite 200<br>Irvine, California 92620<br>United States</div>
         <div contenteditable data-save="coContact" style="margin-top:12px">(949) 236-7896<br>codingmind.com</div>
       </div>
@@ -221,7 +221,7 @@
   function todayLong(){ const d = new Date(); return MONTHS[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear(); }
 
   /* ---------- Settings persistence ---------- */
-  const SETTINGS_KEY = 'invoiceSettings_v3';
+  const SETTINGS_KEY = 'invoiceSettings_v4';
   function loadSettings() {
     let s = {};
     try { s = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; } catch(e){}
